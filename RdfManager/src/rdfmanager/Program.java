@@ -26,13 +26,22 @@ public class Program {
         try
         {
             RdfManager manager = new RdfManager();
-            manager.importData("C:\\Users\\Wizard\\Desktop\\14_1.xml");
-            /*for(Map.Entry<String, Paper> item : manager)
+            //manager.importData("C:\\Users\\Wizard\\Desktop\\14_1.xml");
+            manager.load();
+            for(Map.Entry<String, Paper> item : manager)
             {
                 Paper paper = item.getValue();
                 System.out.println(paper.getId() + "\n" + paper.getTitle());
+            }
+            
+            //manager.exportData("C:\\Users\\Wizard\\Desktop\\1.xml");
+            //manager.save();
+            
+            /*Map<String, Integer> map = manager.accountAuthor();
+            for(Entry<String, Integer> item : map.entrySet() )
+            {
+                System.out.println(item.getKey() + " " + item.getValue().toString());
             }*/
-            manager.exportData("C:\\Users\\Wizard\\Desktop\\1.xml");
         }
         catch(Exception ex)
         {

@@ -9,6 +9,7 @@ package rdfmanager.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +29,8 @@ import rdfmanager.entity.Paper;
 public class RdfManager 
        implements Iterable<Map.Entry<String, Paper>>
 {
+    private static final String SAVE_PATH = "C:\\";
+    
     private HashMap<Integer, Author> authorMap
             = new HashMap<>();
     private HashMap<String, Paper> paperMap
@@ -165,7 +168,6 @@ public class RdfManager
     {
         StreamWriter sw = new StreamWriter(rdfFile);
         HashSet<Integer> authorSet = new HashSet<>();
-        HashSet<String> auListSet = new HashSet<>();
         
         //header
         sw.writeln("<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"");
@@ -195,22 +197,18 @@ public class RdfManager
             }
             
             //au list part
-            if(!auListSet.contains(paper.getId()))
+            sw.writeln("  <rdf:Description rdf:about=\"http://localhost/journals/" + 
+                       paper.getJournal() + "/" + paper.getId() + "/authorlist\">");
+            int i = 1;
+            for(Author au : authorList)
             {
-                sw.writeln("  <rdf:Description rdf:about=\"http://localhost/journals/" + 
-                         paper.getJournal() + "/" + paper.getId() + "/authorlist\">");
-                int i = 1;
-                for(Author au : authorList)
-                {
-                    sw.writeln("    <rdf:_" + String.valueOf(i) + 
-                             " rdf:resource=\"http://localhost/author/" + 
-                             String.valueOf(au.getId()) + "\" />");
-                    i++;
-                }
-                sw.writeln("    <rdf:type rdf:resource=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq\" />");
-                sw.writeln("  </rdf:Description>");
-                auListSet.add(paper.getId());
+                sw.writeln("    <rdf:_" + String.valueOf(i) + 
+                         " rdf:resource=\"http://localhost/author/" + 
+                         String.valueOf(au.getId()) + "\" />");
+                i++;
             }
+            sw.writeln("    <rdf:type rdf:resource=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq\" />");
+            sw.writeln("  </rdf:Description>");
             
             //paper part
             sw.writeln("  <rdf:Description rdf:about=\"http://localhost/journals/" + 
@@ -249,5 +247,173 @@ public class RdfManager
     public Paper get(String key)
     {
         return paperMap.get(key);
+    }
+    
+    public Map<String, Integer> accountAuthor()
+    {
+        HashMap<String, Integer> res 
+                = new HashMap<>();
+        
+        for(Map.Entry<String, Paper> item : paperMap.entrySet())
+        {
+            Paper p = item.getValue();
+            for(Author au : p.getList())
+            {
+                Integer num = res.get(au.getName());
+                if(num == null) num = 0;
+                num += 1;
+                res.put(au.getName(), num);
+            }
+        }
+        
+        return res;
+    }
+    
+    public Map<Integer, Integer> accountYear()
+    {
+        HashMap<Integer, Integer> res 
+                = new HashMap<>();
+        
+        for(Map.Entry<String, Paper> item : paperMap.entrySet())
+        {
+            Paper p = item.getValue();
+            Integer num = res.get(p.getYear());
+            if(num == null) num = 0;
+            num += 1;
+            res.put(p.getYear(), num);
+        }
+        
+        return res;
+    }
+    
+    public Map<String, Integer> accountJournal()
+    {
+        HashMap<String, Integer> res 
+                = new HashMap<>();
+        
+        for(Map.Entry<String, Paper> item : paperMap.entrySet())
+        {
+            Paper p = item.getValue();
+            Integer num = res.get(p.getJournal());
+            if(num == null) num = 0;
+            num += 1;
+            res.put(p.getJournal(), num);
+        }
+        
+        return res;
+    }
+    
+    public void clear()
+    {
+        authorMap.clear();
+        paperMap.clear();
+    }
+    
+    public void save() 
+           throws FileNotFoundException, IOException
+    {
+        //paper
+        StreamWriter sw = new StreamWriter(SAVE_PATH + "paper.dat");
+        
+        for(Map.Entry<String, Paper> item : paperMap.entrySet())
+        {
+            Paper p = item.getValue();
+            
+            sw.write(p.getId());
+            sw.write("|");
+            sw.write(p.getTitle());
+            sw.write("|");
+            sw.write(p.getJournal());
+            sw.write("|");
+            sw.write(String.valueOf(p.getYear()));
+            sw.write("|");
+            
+            StringBuffer labelSb = new StringBuffer();
+            for(String label : p.getLabel())
+                labelSb.append(label).append(";");
+            if(labelSb.length() != 0)
+                labelSb.setLength(labelSb.length() - 1);
+            sw.write(labelSb.toString());
+            sw.write("|");
+            
+            StringBuffer authorSb = new StringBuffer();
+            for(Author au : p.getList())
+                authorSb.append(au.getId()).append(";");
+            if(authorSb.length() != 0)
+                authorSb.setLength(authorSb.length() - 1);
+            sw.write(authorSb.toString());
+            sw.newLine();
+        }
+        
+        sw.close();
+        
+        //author
+        sw = new StreamWriter(SAVE_PATH + "author.dat");
+        
+        for(Map.Entry<Integer, Author> item : authorMap.entrySet())
+        {
+            Author au = item.getValue();
+            sw.writeln(au.getId() + "|" + au.getName());
+        }
+        
+        sw.close();
+    }
+    
+    public void load() 
+           throws FileNotFoundException, IOException
+    {
+        //author
+        if(new File(SAVE_PATH + "author.dat").exists())
+        {
+            StreamReader sr = new StreamReader(SAVE_PATH + "author.dat");
+            while(true)
+            {
+                String line = sr.readLine();
+                if(line == null) break;
+
+                String[] tmp = line.split("\\|");
+                if(tmp.length < 2)
+                    continue;
+                Integer id = Integer.parseInt(tmp[0]);
+                String name = tmp[1];
+                authorMap.put(id, new Author(id, name));
+            }
+            sr.close();
+        }
+        
+        //paper
+        if(new File(SAVE_PATH + "paper.dat").exists())
+        {
+            StreamReader sr = new StreamReader(SAVE_PATH + "paper.dat");
+            while(true)
+            {
+                String line = sr.readLine();
+                if(line == null) break;
+                
+                String[] tmp = line.split("\\|");
+                if(tmp.length < 6)
+                    continue;
+                String id = tmp[0];
+                String title = tmp[1];
+                String journal = tmp[2];
+                int year = Integer.parseInt(tmp[3]);
+                String[] labels = tmp[4].split(";");
+                String[] auIdList = tmp[5].split(";");
+                
+                Paper p = new Paper();
+                p.setId(id);
+                p.setJournal(journal);
+                p.setTitle(title);
+                p.setYear(year);
+                p.setLabel(labels);
+                for(String auId : auIdList)
+                {
+                    Author au = authorMap.get(Integer.parseInt(auId));
+                    p.getList().add(au);
+                }
+                paperMap.put(id, p);
+            }
+            sr.close();
+        }
     }
 }
