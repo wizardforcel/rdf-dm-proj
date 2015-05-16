@@ -459,7 +459,7 @@ public class StopWords
         {
             if(s.endsWith(",") || s.endsWith(".") || s.endsWith(":"))
                 s = s.substring(0, s.length() - 1);
-            if(!stopWords.contains(s))
+            if(!stopWords.contains(s.toLowerCase()))
                 res.add(s);
         }
         

@@ -219,7 +219,8 @@ public class RdfManager
             StringBuffer labelSb = new StringBuffer();
             for(String s : paper.getLabel())
                 labelSb.append(s).append(" ");
-            labelSb.setLength(labelSb.length() - 1);
+            if(labelSb.length() != 0)
+                labelSb.setLength(labelSb.length() - 1);
             sw.writeln("    <rdfs:label>" + labelSb.toString() + "</rdfs:label>");
             sw.writeln("    <rdfs:title>" + paper.getTitle() + "</rdfs:title>");
             sw.writeln("    <rdf:type rdf:resource=\"http://swrc.ontoware.org/ontology#Article\" />");
