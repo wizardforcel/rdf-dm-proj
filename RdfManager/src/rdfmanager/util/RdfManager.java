@@ -154,8 +154,10 @@ public class RdfManager
         paper.setYear(year);
         paper.setTitle(title);
         paper.setJournal(journal);
-        if(!label.equals(title))
-            paper.setLabel(label.split(";"));
+        if(!label.equals(title)) //是不是原始文档
+            paper.setLabel(label.split(" "));
+        else
+            paper.setLabel(StopWords.getLabels(title));
     }
     
     public void exportData(String rdfFile) 
@@ -207,17 +209,18 @@ public class RdfManager
                 }
                 sw.writeln("    <rdf:type rdf:resource=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq\" />");
                 sw.writeln("  </rdf:Description>");
-                auListSet.add(paper.getId())
+                auListSet.add(paper.getId());
             }
             
             //paper part
             sw.writeln("  <rdf:Description rdf:about=\"http://localhost/journals/" + 
                      paper.getJournal() + "/" + paper.getId() + "\">");
             sw.writeln("    <swrc:year>" + paper.getYear() + "</swrc:year>");
-            String labelTxt = "";
+            StringBuffer labelSb = new StringBuffer();
             for(String s : paper.getLabel())
-                labelTxt += s;
-            sw.writeln("    <rdfs:label>" + labelTxt + "</rdfs:label>");
+                labelSb.append(s).append(" ");
+            labelSb.setLength(labelSb.length() - 1);
+            sw.writeln("    <rdfs:label>" + labelSb.toString() + "</rdfs:label>");
             sw.writeln("    <rdfs:title>" + paper.getTitle() + "</rdfs:title>");
             sw.writeln("    <rdf:type rdf:resource=\"http://swrc.ontoware.org/ontology#Article\" />");
             sw.writeln("    <swrc:journal>" + paper.getJournal() + "</swrc:journal>");
