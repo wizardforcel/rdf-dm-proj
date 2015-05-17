@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="math">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/math/mtj-0.9.13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/math/arpack_combo-0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/math/netlib-java-0.9.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

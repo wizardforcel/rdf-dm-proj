@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="rome">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/rss/rome.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
