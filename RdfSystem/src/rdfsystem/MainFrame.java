@@ -34,7 +34,7 @@ import weka.gui.treevisualizer.TreeVisualizer;
  * @author Wizard
  */
 public class MainFrame extends javax.swing.JFrame {
-
+    
     /**
      * Creates new form MainFrame
      */
@@ -377,7 +377,9 @@ public class MainFrame extends javax.swing.JFrame {
     private void clsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clsButtonActionPerformed
         try {
             String res = DataMining.cluster(manager, new String[0]);
-            System.out.println(res);
+            ClusterFrame cf = new ClusterFrame();
+            cf.setText(res);
+            cf.setVisible(true);
         } catch (Exception ex) {
              JOptionPane.showMessageDialog(null, ex.getMessage());
         }
