@@ -154,7 +154,9 @@ public class RdfManager
             return;
         Element labelEle = (Element)li.item(0);
         Text labelText = (Text)labelEle.getFirstChild();
-        String label = labelText.getData().trim();
+        String label = "";
+        if(labelText != null) 
+            label = labelText.getData().trim();
         
         paper.setYear(year);
         paper.setTitle(title);
@@ -222,7 +224,7 @@ public class RdfManager
             if(labelSb.length() != 0)
                 labelSb.setLength(labelSb.length() - 1);
             sw.writeln("    <rdfs:label>" + labelSb.toString() + "</rdfs:label>");
-            sw.writeln("    <rdfs:title>" + paper.getTitle() + "</rdfs:title>");
+            sw.writeln("    <dc:title>" + paper.getTitle() + "</dc:title>");
             sw.writeln("    <rdf:type rdf:resource=\"http://swrc.ontoware.org/ontology#Article\" />");
             sw.writeln("    <swrc:journal>" + paper.getJournal() + "</swrc:journal>");
             sw.writeln("    <bibo:authorList rdf:resource=\"http://localhost/journals/" + 
