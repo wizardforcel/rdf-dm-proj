@@ -6,6 +6,7 @@
 
 package rdfsystem;
 
+import java.awt.BorderLayout;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,8 +19,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
+import rdfsystem.data.DataMining;
 import rdfsystem.data.RdfManager;
 import rdfsystem.entity.Paper;
+import weka.classifiers.trees.J48;
+import weka.clusterers.ClusterEvaluation;
+import weka.clusterers.EM;
+import weka.gui.graphvisualizer.GraphVisualizer;
+import weka.gui.treevisualizer.PlaceNode2;
+import weka.gui.treevisualizer.TreeVisualizer;
 
 /**
  *
@@ -110,8 +118,18 @@ public class MainFrame extends javax.swing.JFrame {
         });
 
         classifyButton.setText("分类");
+        classifyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                classifyButtonActionPerformed(evt);
+            }
+        });
 
         clsButton.setText("聚类");
+        clsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clsButtonActionPerformed(evt);
+            }
+        });
 
         assocButton.setText("关联");
 
@@ -334,6 +352,36 @@ public class MainFrame extends javax.swing.JFrame {
         accountFrame.setJournalData(manager.accountJournal());
         accountFrame.setVisible(true);
     }//GEN-LAST:event_accountButtonActionPerformed
+
+    private void classifyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classifyButtonActionPerformed
+        try {
+            String tree = DataMining.classify(manager, new String[0]);
+            TreeVisualizer tv 
+                    = new TreeVisualizer(null, tree, new PlaceNode2());
+            JDialog jf = new JDialog();
+            jf.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            jf.setSize(800, 600);
+            jf.setModal(true);
+            jf.setLocationRelativeTo(null);
+            jf.setResizable(false);
+            jf.getContentPane().setLayout(new BorderLayout());
+            jf.getContentPane().add(tv, BorderLayout.CENTER);
+            tv.fitToScreen();
+            jf.setVisible(true);
+        } catch (Exception ex) {
+             JOptionPane.showMessageDialog(null, ex.getMessage());
+        }
+        
+    }//GEN-LAST:event_classifyButtonActionPerformed
+
+    private void clsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clsButtonActionPerformed
+        try {
+            String res = DataMining.cluster(manager, new String[0]);
+            System.out.println(res);
+        } catch (Exception ex) {
+             JOptionPane.showMessageDialog(null, ex.getMessage());
+        }
+    }//GEN-LAST:event_clsButtonActionPerformed
 
     private void showPapers()
     {

@@ -95,6 +95,7 @@ public class AccountFrame extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        auTable.setColumnSelectionAllowed(true);
         auTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane2.setViewportView(auTable);
         auTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -126,6 +127,7 @@ public class AccountFrame extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        journalTable.setColumnSelectionAllowed(true);
         journalTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane3.setViewportView(journalTable);
         journalTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
