@@ -7,11 +7,15 @@
 package rdfsystem.data;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import rdfsystem.entity.Author;
 import rdfsystem.entity.Paper;
 import weka.associations.Apriori;
+import weka.associations.FPGrowth;
+import weka.associations.FPGrowth.AssociationRule;
 import weka.classifiers.trees.J48;
 import weka.clusterers.ClusterEvaluation;
 import weka.clusterers.EM;
@@ -27,16 +31,27 @@ import weka.filters.unsupervised.attribute.StringToWordVector;
  */
 public class DataMining 
 {
-    private static Instances transformData(RdfManager manager) throws Exception
+    private static Instances transformData(RdfManager manager, boolean hasYear) 
+            throws Exception
     {
-        Attribute yearAttr = new Attribute("year");
-        Attribute labelAttr = new Attribute("label", (FastVector)null);
-        Attribute authorAttr = new Attribute("author", (FastVector)null);
+        Set<String> words = getAllWords(manager);
+        
+        FastVector binary = new FastVector();
+        binary.addElement("true");
+        binary.addElement("false");
         
         FastVector attrs = new FastVector();
-        attrs.addElement(yearAttr);
-        attrs.addElement(labelAttr);
-        attrs.addElement(authorAttr);
+        if(hasYear)
+        {
+            Attribute yearAttr = new Attribute("year");
+            attrs.addElement(yearAttr);
+        }
+        
+        for(String word : words)
+        {
+            Attribute attr = new Attribute(word, binary);
+            attrs.addElement(attr);
+        }
         
         Instances ins = new Instances("paper", attrs, 0);
         
@@ -44,22 +59,28 @@ public class DataMining
         {
             Paper p = item.getValue();
             
-            StringBuffer labelSb = new StringBuffer();
+            double[] row = new double[ins.numAttributes()];
+            int start = 0;
+            if(hasYear) 
+            {
+                row[0] = p.getYear();
+                start++;
+            }
+            for(int i = start; i < row.length; i++)
+                row[i] = ins.attribute(i).indexOfValue("false");
+            
             for(String label : p.getLabel())
-                labelSb.append(label).append(" ");
-            if(labelSb.length() != 0)
-                labelSb.setLength(labelSb.length() - 1);
+            {
+                int index = ins.attribute("label_" + label).index();
+                row[index] = ins.attribute(index).indexOfValue("true");
+            }
             
-            StringBuffer authorSb = new StringBuffer();
             for(Author au : p.getList())
-                authorSb.append(au.getName()).append(" ");
-            if(authorSb.length() != 0)
-                authorSb.setLength(authorSb.length() - 1);
+            {
+                int index = ins.attribute("author_" + au.getId()).index();
+                row[index] = ins.attribute(index).indexOfValue("true");
+            }
             
-            double[] row = new double[3];
-            row[0] = p.getYear();
-            row[1] = ins.attribute(1).addStringValue(labelSb.toString());
-            row[2] = ins.attribute(2).addStringValue(authorSb.toString());
             ins.add(new Instance(1.0, row));
         }
         
@@ -67,30 +88,24 @@ public class DataMining
         f1.setInputFormat(ins);
         ins = Filter.useFilter(ins, f1);
         
-        StringToWordVector f2 = new StringToWordVector();
-        f2.setInputFormat(ins);
-        ins =  Filter.useFilter(ins, f2);
-        
         return ins;
     }
     
-    public static String classify(RdfManager manager, String[] options) 
+    public static String classify(RdfManager manager) 
            throws Exception
     {
-        Instances ins = transformData(manager);
+        Instances ins = transformData(manager, true);
         ins.setClassIndex(ins.attribute("year").index());
         J48 tree = new J48();
-        tree.setOptions(options);
         tree.buildClassifier(ins);
         return tree.graph();
     }
     
-    public static String cluster(RdfManager manager, String[] options) 
+    public static String cluster(RdfManager manager) 
            throws Exception
     {
-        Instances ins = transformData(manager);
+        Instances ins = transformData(manager, false);
         SimpleKMeans cls = new SimpleKMeans();
-        cls.setOptions(options);
         cls.buildClusterer(ins);
         ClusterEvaluation eval = new ClusterEvaluation();
         eval.setClusterer(cls);
@@ -98,14 +113,33 @@ public class DataMining
         return eval.clusterResultsToString();
     }
     
-    public static Apriori assoiate(RdfManager manager, String[] options) 
+    public static String assoiate(RdfManager manager) 
            throws Exception
     {
-        Instances ins = transformData(manager);
-        Apriori ass = new Apriori();
+        Instances ins = transformData(manager, false);
+        
+        FPGrowth ass = new FPGrowth();
+        String[] options = "-T 0 -C 0.5 -M 0.1".split(" ");
         ass.setOptions(options);
         ass.buildAssociations(ins);
-        return ass;
+        List<AssociationRule> res = ass.getAssociationRules();
+        for(AssociationRule rule : res)
+            System.out.println(rule);
+
+        return null;
     }
     
+    private static Set<String> getAllWords(RdfManager manager)
+    {
+        Set<String> set = new HashSet<>();
+        for(Map.Entry<String, Paper> item : manager)
+        {
+            Paper p = item.getValue();
+            for(Author au : p.getList())
+                set.add("author_" + au.getId());
+            for(String label : p.getLabel())
+                set.add("label_" + label);
+        }
+        return set;
+    }
 }

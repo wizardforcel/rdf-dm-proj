@@ -132,6 +132,11 @@ public class MainFrame extends javax.swing.JFrame {
         });
 
         assocButton.setText("关联");
+        assocButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                assocButtonActionPerformed(evt);
+            }
+        });
 
         paperTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -355,7 +360,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void classifyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classifyButtonActionPerformed
         try {
-            String tree = DataMining.classify(manager, new String[0]);
+            String tree = DataMining.classify(manager);
             TreeVisualizer tv 
                     = new TreeVisualizer(null, tree, new PlaceNode2());
             JDialog jf = new JDialog();
@@ -369,21 +374,32 @@ public class MainFrame extends javax.swing.JFrame {
             tv.fitToScreen();
             jf.setVisible(true);
         } catch (Exception ex) {
-             JOptionPane.showMessageDialog(null, ex.getMessage());
+            JOptionPane.showMessageDialog(null, ex.getMessage());
+            ex.printStackTrace();
         }
         
     }//GEN-LAST:event_classifyButtonActionPerformed
 
     private void clsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clsButtonActionPerformed
         try {
-            String res = DataMining.cluster(manager, new String[0]);
-            ClusterFrame cf = new ClusterFrame();
+            String res = DataMining.cluster(manager);
+            ResultFrame cf = new ResultFrame();
             cf.setText(res);
             cf.setVisible(true);
         } catch (Exception ex) {
-             JOptionPane.showMessageDialog(null, ex.getMessage());
+            JOptionPane.showMessageDialog(null, ex.getMessage());
+            ex.printStackTrace();
         }
     }//GEN-LAST:event_clsButtonActionPerformed
+
+    private void assocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assocButtonActionPerformed
+        try {
+            DataMining.assoiate(manager);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage());
+            ex.printStackTrace();
+        }
+    }//GEN-LAST:event_assocButtonActionPerformed
 
     private void showPapers()
     {
