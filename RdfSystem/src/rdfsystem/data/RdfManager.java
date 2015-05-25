@@ -394,15 +394,25 @@ public class RdfManager
                 String line = sr.readLine();
                 if(line == null) break;
                 
-                String[] tmp = line.split("\\|");
+                String[] tmp = line.split("\\|", -1);
                 if(tmp.length < 6)
+                {
                     continue;
+                }
                 String id = tmp[0];
                 String title = tmp[1];
                 String journal = tmp[2];
                 int year = Integer.parseInt(tmp[3]);
-                String[] labels = tmp[4].split(";");
-                String[] auIdList = tmp[5].split(";");
+                String[] labels;
+                if(tmp[4].length() != 0)
+                    labels = tmp[4].split(";");
+                else
+                    labels = new String[0];
+                String[] auIdList;
+                if(tmp[5].length() != 0)
+                    auIdList = tmp[5].split(";");
+                else
+                    auIdList = new String[0];
                 
                 Paper p = new Paper();
                 p.setId(id);

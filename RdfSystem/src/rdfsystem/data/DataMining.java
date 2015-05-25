@@ -168,6 +168,8 @@ public class DataMining
     {
         Instances ins = transformData(manager, false);
         SimpleKMeans cls = new SimpleKMeans();
+        String[] options = "-N 5".split(" ");
+        cls.setOptions(options);
         cls.buildClusterer(ins);
         ClusterEvaluation eval = new ClusterEvaluation();
         eval.setClusterer(cls);
